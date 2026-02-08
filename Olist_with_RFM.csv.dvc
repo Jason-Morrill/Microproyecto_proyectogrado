@@ -1,0 +1,5 @@
+outs:
+- md5: 72728f90f7dc29095a83ebba89ea4c72
+  size: 63906112
+  hash: md5
+  path: Olist_with_RFM.csv
