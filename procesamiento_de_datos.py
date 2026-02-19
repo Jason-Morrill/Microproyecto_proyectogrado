@@ -122,7 +122,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 import mlflow
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
-
+import mlflow.sklearn
+mlflow.set_experiment("Churn_prediction_Logreg")
 with mlflow.start_run(run_name="Logistic Regression Model"):
     tol = 1e-5
     penalty = "l1"
