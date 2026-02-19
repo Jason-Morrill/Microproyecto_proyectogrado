@@ -1,0 +1,23 @@
+artifact_path: /home/mm/Documents/Microproyecto/Microproyecto_proyectogrado/mlruns/2/models/m-4071f3a0b6e64e6c9cf074001186cd5f/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.3
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.9.0
+model_id: m-4071f3a0b6e64e6c9cf074001186cd5f
+model_size_bytes: 333522
+model_uuid: m-4071f3a0b6e64e6c9cf074001186cd5f
+prompts: null
+run_id: d2cba65071aa46a481ad4e1eae35e386
+utc_time_created: '2026-02-19 17:27:27.429084'

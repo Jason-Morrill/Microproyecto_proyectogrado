@@ -167,18 +167,19 @@ mlflow.set_experiment("Random Forest Classifier")
 from sklearn.ensemble import RandomForestClassifier
 
 with mlflow.start_run(run_name="Random Forest Classifier"):
-     max_depth = 10
-     n_estimators = 100
-     criterion = "gini"
+     max_depth = 100
+     n_estimators = 500
+     criterion = "log_loss"
      min_samples_split = 2
      mlflow.log_params({"max_depth":max_depth})
      mlflow.log_params({"n_estimators":n_estimators})
-     mlflow.log_params({"criterion":crtierion})
+     mlflow.log_params({"criterion":criterion})
      mlflow.log_params({"min_samples_split":min_samples_split})
      model = RandomForestClassifier(random_state=42,max_depth=max_depth,n_estimators=n_estimators,criterion=criterion,min_samples_split=min_samples_split)
      model.fit(X_train_processed,y_train)
      mlflow.sklearn.log_model(model,"Random_forest_classifier")
      y_pred = model.predict(X_test_processed)
      accuracy =accuracy_score(y_test,y_pred)
+     mlflow.log_metric("accuracy",accuracy)
      report = classification_report(y_test,y_pred,output_dict=True)
-     mlflow.log_dict(report,"classification_report_random_forest.json"
+     mlflow.log_dict(report,"classification_report_random_forest.json")
