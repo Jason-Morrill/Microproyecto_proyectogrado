@@ -131,13 +131,16 @@ import mlflow
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 import mlflow.sklearn
-mlflow.set_experiment("Churn_prediction_Logreg")
-with mlflow.start_run(run_name="Logistic Regression Model"):
-    tol = 1e-5
+mlflow.set_experiment("Random Forest Classifier")
+"""with mlflow.start_run(run_name="Logistic Regression Model"):
+    tol = 1e-6
     penalty = "l2"
     C = 1.0
     fit_intercept = True
-    mlflow.log_params(tol,penalty,C,fit_intercept)
+    mlflow.log_params({"tol":tol})
+    mlflow.log_params({"penalty":penalty})
+    mlflow.log_params({"C":C})
+    mlflow.log_params({"fit_intercept":fit_intercept})
     # Instantiate a LogisticRegression model with default parameters
     initial_model = LogisticRegression(random_state=42,tol=tol,penalty=penalty,fit_intercept=fit_intercept) # Added random_state for reproducibility
 
@@ -160,3 +163,22 @@ with mlflow.start_run(run_name="Logistic Regression Model"):
 
     print(f"Initial Logistic Regression Model logged with accuracy: {accuracy_initial}")
     print("Check MLflow UI for more details.")
+"""
+from sklearn.ensemble import RandomForestClassifier
+
+with mlflow.start_run(run_name="Random Forest Classifier"):
+     max_depth = 10
+     n_estimators = 100
+     criterion = "gini"
+     min_samples_split = 2
+     mlflow.log_params({"max_depth":max_depth})
+     mlflow.log_params({"n_estimators":n_estimators})
+     mlflow.log_params({"criterion":crtierion})
+     mlflow.log_params({"min_samples_split":min_samples_split})
+     model = RandomForestClassifier(random_state=42,max_depth=max_depth,n_estimators=n_estimators,criterion=criterion,min_samples_split=min_samples_split)
+     model.fit(X_train_processed,y_train)
+     mlflow.sklearn.log_model(model,"Random_forest_classifier")
+     y_pred = model.predict(X_test_processed)
+     accuracy =accuracy_score(y_test,y_pred)
+     report = classification_report(y_test,y_pred,output_dict=True)
+     mlflow.log_dict(report,"classification_report_random_forest.json"
