@@ -134,9 +134,10 @@ import mlflow.sklearn
 mlflow.set_experiment("Churn_prediction_Logreg")
 with mlflow.start_run(run_name="Logistic Regression Model"):
     tol = 1e-5
-    penalty = "l1"
+    penalty = "l2"
     C = 1.0
-    fit_intercept = True            # Start a new MLflow run.
+    fit_intercept = True
+    mlflow.log_params(tol,penalty,C,fit_intercept)
     # Instantiate a LogisticRegression model with default parameters
     initial_model = LogisticRegression(random_state=42,tol=tol,penalty=penalty,fit_intercept=fit_intercept) # Added random_state for reproducibility
 
