@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1HJrru2XIMFeGFG2-81nJbOvURqYvMdyv
 """
 
-!unzip OlistData.zip
+
 
 import numpy as np
 import pandas as pd
@@ -91,3 +91,60 @@ print(rfm_data.info())
 
 rfm_data.to_csv('rfm_data.csv', index=False)
 
+Final_data['order_purchase_timestamp'] = pd.to_datetime(Final_data['order_purchase_timestamp'])
+Final_data['shipping_limit_date'] = pd.to_datetime(Final_data['shipping_limit_date'])
+
+# Calculate shipping time for each order in days
+Final_data['shipping_time'] = (Final_data['shipping_limit_date'] - Final_data['order_purchase_timestamp']).dt.total_seconds() / (24 * 3600)
+
+# Calculate average shipping time per unique customer
+avg_shipping_time_df = Final_data.groupby('customer_unique_id')['shipping_time'].mean().reset_index()
+avg_shipping_time_df.columns = ['customer_unique_id', 'avg_shipping_time']
+
+# Merge the average shipping time into rfm_data
+rfm_data = pd.merge(rfm_data, avg_shipping_time_df, on='customer_unique_id', how='left')
+
+print(rfm_data.head())
+avg_review_score_df = Final_data.groupby('customer_unique_id')['review_score'].mean().reset_index()
+avg_review_score_df.columns = ['customer_unique_id', 'avg_review_score']
+
+# Merge the average review score into rfm_data
+rfm_data = pd.merge(rfm_data, avg_review_score_df, on='customer_unique_id', how='left')
+
+print(rfm_data.head())
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+model = LogisticRegression()
+X = rfm_data.drop("churned", axis=1)
+y = rfm_data["churned"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+import mlflow
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+with mlflow.start_run(run_name="Initial Logistic Regression Model"):
+    tol = 1e-5
+    penalty = "l1"            # Start a new MLflow run.
+    # Instantiate a LogisticRegression model with default parameters
+    initial_model = LogisticRegression(random_state=42) # Added random_state for reproducibility
+
+    # Fit the model to the training data
+    initial_model.fit(X_train_processed, y_train)
+
+    # Log the model
+    mlflow.sklearn.log_model(initial_model, "initial_logistic_regression_model")
+
+    # Make predictions on the test set
+    y_pred_initial = initial_model.predict(X_test_processed)
+
+    # Calculate and log accuracy
+    accuracy_initial = accuracy_score(y_test, y_pred_initial)
+    mlflow.log_metric("accuracy", accuracy_initial)
+
+    # Generate and log classification report as an artifact
+    report_initial = classification_report(y_test, y_pred_initial, output_dict=True)
+    mlflow.log_dict(report_initial, "initial_classification_report.json")
+
+    print(f"Initial Logistic Regression Model logged with accuracy: {accuracy_initial}")
+    print("Check MLflow UI for more details.")
