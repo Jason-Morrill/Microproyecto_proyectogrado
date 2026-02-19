@@ -119,6 +119,14 @@ model = LogisticRegression()
 X = rfm_data.drop("churned", axis=1)
 y = rfm_data["churned"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+numerical_cols = X_train.select_dtypes(include=['int64', 'float64']).columns
+X_train_processed = X_train[numerical_cols]
+X_test_processed = X_test[numerical_cols]
+
+# Fill any remaining NaN values in numerical columns, e.g., with the mean
+# This is a good practice as models often don't handle NaNs directly
+X_train_processed = X_train_processed.fillna(X_train_processed.mean())
+X_test_processed = X_test_processed.fillna(X_test_processed.mean())
 import mlflow
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
