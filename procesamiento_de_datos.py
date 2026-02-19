@@ -123,11 +123,13 @@ import mlflow
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-with mlflow.start_run(run_name="Initial Logistic Regression Model"):
+with mlflow.start_run(run_name="Logistic Regression Model"):
     tol = 1e-5
-    penalty = "l1"            # Start a new MLflow run.
+    penalty = "l1"
+    C = 1.0
+    fit_intercept = True            # Start a new MLflow run.
     # Instantiate a LogisticRegression model with default parameters
-    initial_model = LogisticRegression(random_state=42) # Added random_state for reproducibility
+    initial_model = LogisticRegression(random_state=42,tol=tol,penalty=penalty,fit_intercept=fit_intercept) # Added random_state for reproducibility
 
     # Fit the model to the training data
     initial_model.fit(X_train_processed, y_train)
