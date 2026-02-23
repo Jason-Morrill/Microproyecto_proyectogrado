@@ -1,0 +1,11 @@
+/* Minimal fonts import to satisfy Vite/Tailwind processing.
+   Replace or extend with your preferred fonts if needed. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+:root {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+html, body {
+  font-family: var(--font-sans);
+}
