@@ -183,3 +183,46 @@ with mlflow.start_run(run_name="Random Forest Classifier"):
      mlflow.log_metric("accuracy",accuracy)
      report = classification_report(y_test,y_pred,output_dict=True)
      mlflow.log_dict(report,"classification_report_random_forest.json")
+import json
+import numpy as np
+import matplotlib.pyplot as plt
+
+def _sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# load the JSON created by your training run
+with open("model_weights.json", "r") as f:
+    _mw = json.load(f)
+_intercept = _mw["intercept"]
+_weights = {f["name"]: f["weight"] for f in _mw["features"]}
+
+def predict_from_weights(df: pd.DataFrame) -> pd.Series:
+    """Compute logistic score using the static weights."""
+    linear = np.full(len(df), _intercept, dtype=float)
+
+    for name, w in _weights.items():
+        if name.startswith("num__"):
+            col = name.replace("num__", "")
+            if col in df.columns:
+                linear += df[col].fillna(0).to_numpy() * w
+        elif name.startswith("cat__customer_state_"):
+            state = name.replace("cat__customer_state_", "")
+            linear += (df.get("customer_state") == state).astype(float).to_numpy() * w
+
+    return _sigmoid(linear)
+
+# …after you have rfm_data…
+rfm_data["churn_prob"] = predict_from_weights(rfm_data)
+
+print(rfm_data[["churn_prob"]].describe())
+
+# plot a distribution – now specific to this model
+plt.figure(figsize=(6,4))
+plt.hist(rfm_data["churn_prob"], bins=50, density=True,
+         color="#3b82f6", alpha=0.6)
+plt.title("Distribución de probabilidades (pesos fijos del modelo)")
+plt.xlabel("P(churn)")
+plt.ylabel("Densidad")
+plt.show()
+
+rfm_data.to_csv("rfm_data.csv", index=False)
