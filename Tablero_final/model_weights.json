@@ -1,0 +1,149 @@
+{
+    "intercept": 1.4656933721970333,
+    "features": [
+        {
+            "name": "num__Recency",
+            "weight": 0.07960180534186836
+        },
+        {
+            "name": "num__Frequency",
+            "weight": -0.37917200082766345
+        },
+        {
+            "name": "num__Monetary",
+            "weight": 0.9735160531886679
+        },
+        {
+            "name": "num__avg_review_score",
+            "weight": -0.20017490116368572
+        },
+        {
+            "name": "num__avg_delivery_days",
+            "weight": -0.17992822030633163
+        },
+        {
+            "name": "num__avg_late_days",
+            "weight": 0.21035250118650578
+        },
+        {
+            "name": "num__avg_num_items",
+            "weight": -0.27074329319504675
+        },
+        {
+            "name": "num__avg_price_sum",
+            "weight": -0.746838612779997
+        },
+        {
+            "name": "num__avg_freight_sum",
+            "weight": 0.06849422764517833
+        },
+        {
+            "name": "cat__customer_state_AC",
+            "weight": 0.8891427625897925
+        },
+        {
+            "name": "cat__customer_state_AL",
+            "weight": 1.9995507387239346
+        },
+        {
+            "name": "cat__customer_state_AM",
+            "weight": 1.359026271830966
+        },
+        {
+            "name": "cat__customer_state_AP",
+            "weight": 0.9828125475435702
+        },
+        {
+            "name": "cat__customer_state_BA",
+            "weight": -1.2692684455607737
+        },
+        {
+            "name": "cat__customer_state_CE",
+            "weight": -0.5174958235137772
+        },
+        {
+            "name": "cat__customer_state_DF",
+            "weight": 3.5553472116278915
+        },
+        {
+            "name": "cat__customer_state_ES",
+            "weight": 3.5881665042936777
+        },
+        {
+            "name": "cat__customer_state_GO",
+            "weight": -1.8730088228689412
+        },
+        {
+            "name": "cat__customer_state_MA",
+            "weight": -1.1233109397918681
+        },
+        {
+            "name": "cat__customer_state_MG",
+            "weight": -1.2293989877304843
+        },
+        {
+            "name": "cat__customer_state_MS",
+            "weight": 2.646019843943168
+        },
+        {
+            "name": "cat__customer_state_MT",
+            "weight": -0.7898643220515362
+        },
+        {
+            "name": "cat__customer_state_PA",
+            "weight": -1.217008749296173
+        },
+        {
+            "name": "cat__customer_state_PB",
+            "weight": -2.1089388324623632
+        },
+        {
+            "name": "cat__customer_state_PE",
+            "weight": -0.21805401736521868
+        },
+        {
+            "name": "cat__customer_state_PI",
+            "weight": 2.1806388601943776
+        },
+        {
+            "name": "cat__customer_state_PR",
+            "weight": -1.3739260102221562
+        },
+        {
+            "name": "cat__customer_state_RJ",
+            "weight": -1.263565835094254
+        },
+        {
+            "name": "cat__customer_state_RN",
+            "weight": 2.384214790969655
+        },
+        {
+            "name": "cat__customer_state_RO",
+            "weight": -1.2867068291795682
+        },
+        {
+            "name": "cat__customer_state_RR",
+            "weight": 0.3324595072944885
+        },
+        {
+            "name": "cat__customer_state_RS",
+            "weight": -1.0713840966502033
+        },
+        {
+            "name": "cat__customer_state_SC",
+            "weight": -0.8967683947477548
+        },
+        {
+            "name": "cat__customer_state_SE",
+            "weight": 1.805519925609801
+        },
+        {
+            "name": "cat__customer_state_SP",
+            "weight": -1.6097534867645311
+        },
+        {
+            "name": "cat__customer_state_TO",
+            "weight": -2.8666644814188795
+        }
+    ]
+}
