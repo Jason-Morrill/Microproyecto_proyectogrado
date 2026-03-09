@@ -25,7 +25,15 @@ app.post('/api/predict', (req, res) => {
   const prob = predict(req.body);
   res.json({ churnProbability: prob });
 });
-app.get('/', (req, res) => {
-  res.send('Hello! The server is running.');
+const express = require('express');
+const path = require('path');
+
+
+// Serve static files from the 'build' or 'dist' folder
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Any other route should serve the index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 app.listen(3000, () => console.log('API listening on http://localhost:3000'));
