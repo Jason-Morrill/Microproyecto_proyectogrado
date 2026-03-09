@@ -20,7 +20,25 @@ function predict(data) {
   if (stateFeature) logit += stateFeature.weight;
   return 1 / (1 + Math.exp(-logit));
 }
+import { useEffect, useState } from 'react';
 
+function App() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // Replace with your EC2 Public IP
+    fetch('http://44.197.200.83:3000/api/data') 
+      .then(response => response.json())
+      .then(json => setData(json));
+  }, []);
+
+  return (
+    <div>
+      <h1>Frontend App</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
 app.post('/api/predict', (req, res) => {
   const prob = predict(req.body);
   res.json({ churnProbability: prob });
@@ -30,10 +48,18 @@ const path = require('path');
 
 
 // Serve static files from the 'build' or 'dist' folder
-app.use(express.static(path.join(__dirname, '../client/build')));
 
-// Any other route should serve the index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+// 1. Serve the static files from the Vite build
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// 2. Your API routes
+app.get('/api/status', (req, res) => {
+  res.json({ message: "API is alive!" });
 });
-app.listen(3000, () => console.log('API listening on http://localhost:3000'));
+
+// 3. Hand everything else to the Frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+app.listen(3000, '0.0.0.0');
