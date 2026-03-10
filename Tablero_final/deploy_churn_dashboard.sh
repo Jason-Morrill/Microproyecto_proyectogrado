@@ -30,11 +30,6 @@ fi
 
 cd "$REPO_DIR"
 
-if [ -d .git ]; then
-  log "Pulling latest changes from git..."
-  git pull --ff-only || log "git pull failed or no upstream; continuing with local code"
-fi
-
 log "Stopping existing PM2 process (if any): $PROCESS_NAME"
 pm2 delete "$PROCESS_NAME" >/dev/null 2>&1 || true
 
