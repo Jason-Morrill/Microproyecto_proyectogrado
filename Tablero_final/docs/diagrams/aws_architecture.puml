@@ -1,0 +1,37 @@
+@startuml
+' AWS icons from aws-icons-for-plantuml
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v20.0/dist
+!includeurl AWSPuml/AWSCommon.puml
+!includeurl AWSPuml/General/Users.puml
+!includeurl AWSPuml/NetworkingContentDelivery/ElasticLoadBalancingApplicationLoadBalancer.puml
+!includeurl AWSPuml/Compute/EC2.puml
+!includeurl AWSPuml/Storage/SimpleStorageService.puml
+
+left to right direction
+skinparam linetype ortho
+skinparam shadowing false
+
+title Arquitectura en AWS - Churn Dashboard
+
+Users(user, "Usuario", "Navegador")
+ElasticLoadBalancingApplicationLoadBalancer(alb, "ALB", "HTTPS 443")
+EC2(ec2, "EC2 Ubuntu", "Node.js + PM2 + Python venv")
+rectangle "Express API\n/api/predict" as api
+rectangle "Python Worker\npredict_joblib.py" as py
+SimpleStorageService(s3, "S3 (opcional)", "Artefactos y respaldos")
+
+user --> alb : Solicitudes web
+alb --> ec2 : HTTP 3000
+ec2 --> api : Proceso Node
+api --> py : spawn + stdin JSON
+py --> api : stdout JSON (proba)
+api --> alb : Respuesta JSON
+ec2 --> s3 : Backup artefactos
+
+note right of ec2
+  Logs:
+  - PM2 logs
+  - server/logs/server.log
+end note
+
+@enduml

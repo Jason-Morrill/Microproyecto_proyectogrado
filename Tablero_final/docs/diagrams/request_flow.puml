@@ -1,0 +1,28 @@
+@startuml
+skinparam monochrome false
+skinparam shadowing false
+
+title Tablero Final - Flujo de Prediccion
+
+autonumber
+
+actor Usuario
+participant "Frontend\nReact" as FE
+participant "API\nExpress" as API
+participant "Python\npredict_joblib.py" as PY
+database "Modelo\njoblib" as M
+collections "Log File\nserver.log" as L
+
+Usuario -> FE : Ingresa variables
+FE -> API : POST /api/predict\n(payload JSON)
+API -> L : HTTP request log
+API -> PY : spawn + stdin(payload)
+PY -> M : load(model)
+PY -> M : predict_proba(X)
+M --> PY : proba
+PY --> API : {"churnProbability": proba}
+API -> L : writeLog(proba)
+API --> FE : 200 OK + JSON
+FE --> Usuario : Render resultado
+
+@enduml

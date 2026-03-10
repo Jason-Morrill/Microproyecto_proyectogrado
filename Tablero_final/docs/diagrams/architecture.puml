@@ -1,0 +1,37 @@
+@startuml
+skinparam monochrome false
+skinparam shadowing false
+skinparam defaultTextAlignment center
+
+title Tablero Final - Arquitectura Logica
+
+package "Presentacion" {
+  [Frontend React/Vite] as FE
+}
+
+package "Servicio API" {
+  [Express API\nserver/index.js] as API
+}
+
+package "Inferencia ML" {
+  [Python\npredict_joblib.py] as PY
+  database "Modelo\nbest_model_logreg.joblib" as MODEL
+}
+
+package "Operacion" {
+  [PM2\nchurn_dashboard] as PM2
+  database "Logs\nserver/logs/server.log" as LOG
+}
+
+actor Usuario as U
+
+U --> FE : Interaccion UI
+FE --> API : POST /api/predict\nJSON
+PM2 --> API : Gestion de proceso
+API --> PY : spawn(.venv/bin/python)\nstdin JSON
+PY --> MODEL : load + predict_proba
+PY --> API : stdout JSON
+API --> FE : churnProbability
+API --> LOG : writeLog()
+
+@enduml
