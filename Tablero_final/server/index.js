@@ -80,6 +80,14 @@ const VENV_PYTHON = path.resolve(__dirname, '.venv/bin/python');
 
 app.post('/api/predict', (req, res) => {
     try {
+        const sendJson = (statusCode, body) => {
+            if (res.headersSent) {
+                writeLog('WARN', `Skipped duplicate response status=${statusCode} body=${JSON.stringify(body)}`);
+                return;
+            }
+            res.status(statusCode).json(body);
+        };
+
         const payload = {
             Recency: req.body.Recency ?? req.body.recency,
             Frequency: req.body.Frequency ?? req.body.frequency,
@@ -120,7 +128,8 @@ app.post('/api/predict', (req, res) => {
 
             if (code !== 0) {
                 writeLog('ERROR', `Python process exited with code ${code}. Output: ${dataString}`);
-                return res.status(500).json({ error: 'Prediction failed' });
+                sendJson(500, { error: 'Prediction failed' });
+                return;
             }
 
             try {
@@ -130,18 +139,28 @@ app.post('/api/predict', (req, res) => {
                 writeLog('INFO', `proba=${proba}`);
                 console.log(`proba=${proba}`);
                 writeLog('PREDICT', `payload=${JSON.stringify(payload)}`);
-                return res.json(prediction);
+                sendJson(200, prediction);
+                return;
             } catch (err) {
                 writeLog('ERROR', `Error parsing prediction: ${err.message}. Raw: ${dataString}`);
-                return res.status(500).json({ error: 'Invalid prediction response' });
+                sendJson(500, { error: 'Invalid prediction response' });
+                return;
             }
+        });
+
+        pythonProcess.on('error', (err) => {
+            writeLog('ERROR', `Python process spawn error: ${err.message}`);
+            sendJson(500, { error: 'Prediction process error' });
         });
 
         pythonProcess.stdin.write(JSON.stringify(payload));
         pythonProcess.stdin.end();
     } catch (err) {
         writeLog('ERROR', `Prediction error: ${err.message}`);
-        return res.status(500).json({ error: 'Prediction failed' });
+        if (!res.headersSent) {
+            return res.status(500).json({ error: 'Prediction failed' });
+        }
+        return;
     }
 });
 
