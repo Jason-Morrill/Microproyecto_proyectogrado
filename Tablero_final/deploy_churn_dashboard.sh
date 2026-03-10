@@ -52,6 +52,20 @@ log "Installing backend dependencies..."
 cd "$SERVER_DIR"
 npm install
 
+log "Installing required Python 3 libraries..."
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "ERROR: python3 is not installed. Install it first (e.g. sudo apt install -y python3 python3-pip)"
+  exit 1
+fi
+
+if ! python3 -m pip --version >/dev/null 2>&1; then
+  echo "ERROR: pip for python3 is not available. Install it first (e.g. sudo apt install -y python3-pip)"
+  exit 1
+fi
+
+python3 -m pip install --upgrade pip
+python3 -m pip install pandas joblib scikit-learn
+
 log "Starting backend with PM2..."
 pm2 start "$SERVER_DIR/index.js" --name "$PROCESS_NAME"
 pm2 save
