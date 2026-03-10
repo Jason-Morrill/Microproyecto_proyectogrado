@@ -22,12 +22,52 @@ function writeLog(level, message) {
     logStream.write(`[${timestamp}] [${level}] ${message}\n`);
 }
 
+function classifyRequestSource(userAgent) {
+    const ua = String(userAgent || '').toLowerCase();
+
+    if (
+        ua.includes('elb-healthchecker') ||
+        ua.includes('healthchecker') ||
+        ua.includes('kube-probe') ||
+        ua.includes('route53')
+    ) {
+        return 'health-check';
+    }
+
+    if (ua.startsWith('curl/')) {
+        return 'curl';
+    }
+
+    if (
+        ua.includes('mozilla') ||
+        ua.includes('chrome') ||
+        ua.includes('safari') ||
+        ua.includes('firefox') ||
+        ua.includes('edg/') ||
+        ua.includes('opr/')
+    ) {
+        return 'browser';
+    }
+
+    return 'api-client';
+}
+
 app.use((req, res, next) => {
     const startMs = Date.now();
 
     res.on('finish', () => {
         const durationMs = Date.now() - startMs;
-        writeLog('HTTP', `${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`);
+        const forwardedFor = req.headers['x-forwarded-for'];
+        const forwardedIp = Array.isArray(forwardedFor)
+            ? forwardedFor[0]
+            : (forwardedFor || '').split(',')[0].trim();
+        const clientIp = forwardedIp || req.socket.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || 'unknown';
+        const source = classifyRequestSource(userAgent);
+        writeLog(
+            'HTTP',
+            `${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms source=${source} ip=${clientIp} ua="${userAgent}"`
+        );
     });
 
     next();
