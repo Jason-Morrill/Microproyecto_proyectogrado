@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 import { spawn } from 'child_process';
 const MODEL_PATH = path.resolve(__dirname, 'best_model_logreg.joblib');
-const VENV_PYTHON = path.resolve(__dirname, '../.venv/bin/python');
+const VENV_PYTHON = path.resolve(__dirname, '.venv/bin/python');
 
 app.post('/api/predict', (req, res) => {
     try {
@@ -52,7 +52,7 @@ app.post('/api/predict', (req, res) => {
             avg_freight_sum: req.body.avg_freight_sum,
             customer_state: req.body.customer_state,
         };
-        writeLog('INFO', `path to env: ${VENV_PYTHON}`);
+        writeLog('INFO', `<<<<<<<< path to env >>>>>>>: ${VENV_PYTHON}`);
         writeLog('INFO', `Received prediction request with payload: ${JSON.stringify(payload)}`);
         const pythonProcess = spawn(VENV_PYTHON, ['predict_joblib.py', MODEL_PATH], {
             cwd: __dirname,
