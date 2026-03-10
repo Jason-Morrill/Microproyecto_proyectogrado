@@ -10,6 +10,8 @@ set -euo pipefail
 REPO_DIR="${REPO_DIR:-$HOME/Microproyecto_proyectogrado}"
 APP_DIR="$REPO_DIR/Tablero_final"
 SERVER_DIR="$APP_DIR/server"
+VENV_DIR="$APP_DIR/.venv"
+REQUIREMENTS_FILE="$SERVER_DIR/requirements.txt"
 PROCESS_NAME="churn_dashboard"
 
 log() {
@@ -63,11 +65,28 @@ if ! python3 -m pip --version >/dev/null 2>&1; then
   exit 1
 fi
 
-python3 -m pip install --upgrade pip
-python3 -m pip install pandas joblib scikit-learn
+if [ ! -d "$VENV_DIR" ]; then
+  log "Creating Python virtual environment in: $VENV_DIR"
+  python3 -m venv "$VENV_DIR"
+fi
+
+if [ ! -f "$REQUIREMENTS_FILE" ]; then
+  echo "ERROR: requirements file not found: $REQUIREMENTS_FILE"
+  exit 1
+fi
+
+log "Activating Python virtual environment..."
+source "$VENV_DIR/bin/activate"
+
+python -m pip install --upgrade pip
+python -m pip install -r "$REQUIREMENTS_FILE"
+
+# Ensure child processes (Node -> Python) resolve the venv interpreter first.
+export PATH="$VENV_DIR/bin:$PATH"
+export VIRTUAL_ENV="$VENV_DIR"
 
 log "Starting backend with PM2..."
-pm2 start "$SERVER_DIR/index.js" --name "$PROCESS_NAME"
+pm2 start "$SERVER_DIR/index.js" --name "$PROCESS_NAME" --update-env
 pm2 save
 
 log "Deploy complete. Process status:"
