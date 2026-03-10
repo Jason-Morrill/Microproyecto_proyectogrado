@@ -34,11 +34,27 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
+import { spawn } from 'child_process';
 // 1. API Route (The predict function should go here)
 app.post('/api/predict', (req, res) => {
     // Keep your predict() function here
     // Keep your logic here
+    pythonProcess.stdin.write(JSON.stringify(req.body));
+    pythonProcess.stdin.end();
+
+    let dataString = '';
+    pythonProcess.stdout.on('data', (data) => {
+        dataString += data.toString();
+    });
+
+    pythonProcess.stdout.on('end', () => {
+        try {
+            const prediction = JSON.parse(dataString);
+            res.json(prediction);
+        } catch (err) {
+            res.status(500).send("Prediction failed");
+        }
+    });
     writeLog('PREDICT', `payload=${JSON.stringify(req.body)}`);
     res.json({ message: "Prediction success hola munndo" }); 
 });
