@@ -36,7 +36,7 @@ export default function App() {
   const [churnProbability, setChurnProbability] = useState(0);
   const [loading, setLoading] = useState(false); // kept for potential spinner
 
-  const API_BASE = ((import.meta as any).env?.VITE_API_BASE as string) || 'http://localhost:3000';
+  const API_BASE = ((import.meta as any).env?.VITE_API_BASE as string) || 'http://98.93.57.147:3000';
 
   useEffect(() => {
     async function fetchPrediction() {
