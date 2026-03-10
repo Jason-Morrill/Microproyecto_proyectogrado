@@ -1,5 +1,6 @@
 # Dashboard (Streamlit)
 
+
 Ejecutar desde la raíz del repo (donde existe `outputs/` generado por el notebook):
 ```bash
 conda activate e2_churn
