@@ -8,6 +8,11 @@ from joblib import load
 
 
 def main() -> int:
+    print(json.dumps({"status": "ok"}))  # Health check response
+    print(json.dumps({"message": "Predicting churn probability..."}))  # Log message
+    print(json.dumps({"input": "Waiting for input data..."}))  # Log message
+    print(json.dumps({"model": "Loading model..."}))  # Log message
+    print(json.dumps({"sys.argv": sys.argv}))  # Log command-line arguments
     if len(sys.argv) < 2:
         print(json.dumps({"error": "Missing model path argument"}))
         return 2
