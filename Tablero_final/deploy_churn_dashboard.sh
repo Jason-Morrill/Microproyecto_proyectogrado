@@ -10,6 +10,8 @@ set -euo pipefail
 REPO_DIR="${REPO_DIR:-$HOME/Microproyecto_proyectogrado}"
 APP_DIR="$REPO_DIR/Tablero_final"
 SERVER_DIR="$APP_DIR/server"
+VENV_DIR="$APP_DIR/.venv"
+REQUIREMENTS_FILE="$SERVER_DIR/requirements.txt"
 PROCESS_NAME="churn_dashboard"
 
 log() {
@@ -29,11 +31,6 @@ if ! command -v pm2 >/dev/null 2>&1; then
 fi
 
 cd "$REPO_DIR"
-
-if [ -d .git ]; then
-  log "Pulling latest changes from git..."
-  git pull --ff-only || log "git pull failed or no upstream; continuing with local code"
-fi
 
 log "Stopping existing PM2 process (if any): $PROCESS_NAME"
 pm2 delete "$PROCESS_NAME" >/dev/null 2>&1 || true
@@ -88,7 +85,7 @@ export PATH="$VENV_DIR/bin:$PATH"
 export VIRTUAL_ENV="$VENV_DIR"
 
 log "Starting backend with PM2..."
-pm2 start "$SERVER_DIR/index.js" --name "$PROCESS_NAME"
+pm2 start "$SERVER_DIR/index.js" --name "$PROCESS_NAME" --update-env
 pm2 save
 
 log "Deploy complete. Process status:"
