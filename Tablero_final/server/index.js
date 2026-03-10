@@ -52,6 +52,7 @@ app.post('/api/predict', (req, res) => {
             avg_freight_sum: req.body.avg_freight_sum,
             customer_state: req.body.customer_state,
         };
+        writeLog('INFO', '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Received prediction request >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
         writeLog('INFO', `<<<<<<<< path to env >>>>>>>: ${VENV_PYTHON}`);
         writeLog('INFO', `Received prediction request with payload: ${JSON.stringify(payload)}`);
         const pythonProcess = spawn(VENV_PYTHON, ['predict_joblib.py', MODEL_PATH], {
