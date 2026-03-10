@@ -35,13 +35,15 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 import { spawn } from 'child_process';
-// 1. API Route (The predict function should go here)
 app.post('/api/predict', (req, res) => {
-    // Keep your predict() function here
-    // Keep your logic here
+    try{
+     writeLog('INFO', `Received prediction request with payload: ${JSON.stringify(req.body)}`);
+    const pythonProcess = spawn('python3', ['predict_joblib.py']);
+    writeLog('INFO', `Spawned Python process with PID: ${pythonProcess.pid}`);   
     pythonProcess.stdin.write(JSON.stringify(req.body));
+    writeLog('INFO', `Sent data to Python process: ${JSON.stringify(req.body)}`);
     pythonProcess.stdin.end();
-
+    writeLog('INFO', `Closed stdin for Python process with PID: ${pythonProcess.pid}`);
     let dataString = '';
     pythonProcess.stdout.on('data', (data) => {
         dataString += data.toString();
@@ -50,20 +52,23 @@ app.post('/api/predict', (req, res) => {
     pythonProcess.stdout.on('end', () => {
         try {
             const prediction = JSON.parse(dataString);
+            writeLog('INFO', `Received prediction from Python process: ${JSON.stringify(prediction)}`);
             res.json(prediction);
         } catch (err) {
+            writeLog('ERROR', `Error parsing prediction: ${err.message}`);
             res.status(500).send("Prediction failed");
         }
     });
     writeLog('PREDICT', `payload=${JSON.stringify(req.body)}`);
     res.json({ message: "Prediction success hola munndo" }); 
+    } catch (err) {
+        writeLog('ERROR', `Prediction error: ${err.message}`);
+        res.status(500).send("Prediction failed");
+    }
 });
 
-// 2. Serve the static files from the 'dist' folder
-// Note the path: '../dist' points one level up from your 'server' folder
 app.use(express.static(path.join(__dirname, '../dist')));
 app.use(express.static(path.resolve(__dirname, '../dist')));
-// 3. Handle SPA routing (for React Router)
 app.get(/.*/, (req, res) => {
     res.sendFile(path.resolve(__dirname, '../dist/index.html'));
 });
