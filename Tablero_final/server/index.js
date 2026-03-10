@@ -35,35 +35,67 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 import { spawn } from 'child_process';
-app.post('/api/predict', (req, res) => {
-    try{
-     writeLog('INFO', `Received prediction request with payload: ${JSON.stringify(req.body)}`);
-    const pythonProcess = spawn('python3', ['predict_joblib.py']);
-    writeLog('INFO', `Spawned Python process with PID: ${pythonProcess.pid}`);   
-    pythonProcess.stdin.write(JSON.stringify(req.body));
-    writeLog('INFO', `Sent data to Python process: ${JSON.stringify(req.body)}`);
-    pythonProcess.stdin.end();
-    writeLog('INFO', `Closed stdin for Python process with PID: ${pythonProcess.pid}`);
-    let dataString = '';
-    pythonProcess.stdout.on('data', (data) => {
-        dataString += data.toString();
-    });
+const MODEL_PATH = path.resolve(__dirname, 'best_model_logreg.joblib');
 
-    pythonProcess.stdout.on('end', () => {
-        try {
-            const prediction = JSON.parse(dataString);
-            writeLog('INFO', `Received prediction from Python process: ${JSON.stringify(prediction)}`);
-            res.json(prediction);
-        } catch (err) {
-            writeLog('ERROR', `Error parsing prediction: ${err.message}`);
-            res.status(500).send("Prediction failed");
-        }
-    });
-    writeLog('PREDICT', `payload=${JSON.stringify(req.body)}`);
-    res.json({ message: "Prediction success hola munndo" }); 
+app.post('/api/predict', (req, res) => {
+    try {
+        const payload = {
+            Recency: req.body.Recency ?? req.body.recency,
+            Frequency: req.body.Frequency ?? req.body.frequency,
+            Monetary: req.body.Monetary ?? req.body.monetary,
+            avg_review_score: req.body.avg_review_score,
+            avg_delivery_days: req.body.avg_delivery_days,
+            avg_late_days: req.body.avg_late_days,
+            avg_num_items: req.body.avg_num_items,
+            avg_price_sum: req.body.avg_price_sum,
+            avg_freight_sum: req.body.avg_freight_sum,
+            customer_state: req.body.customer_state,
+        };
+
+        writeLog('INFO', `Received prediction request with payload: ${JSON.stringify(payload)}`);
+        const pythonProcess = spawn('python3', ['predict_joblib.py', MODEL_PATH], {
+            cwd: __dirname,
+            env: process.env,
+        });
+        writeLog('INFO', `Spawned Python process with PID: ${pythonProcess.pid}`);
+
+        let dataString = '';
+        let errorString = '';
+
+        pythonProcess.stdout.on('data', (data) => {
+            dataString += data.toString();
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+            errorString += data.toString();
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (errorString) {
+                writeLog('ERROR', `Python stderr: ${errorString.trim()}`);
+            }
+
+            if (code !== 0) {
+                writeLog('ERROR', `Python process exited with code ${code}. Output: ${dataString}`);
+                return res.status(500).json({ error: 'Prediction failed' });
+            }
+
+            try {
+                const prediction = JSON.parse(dataString);
+                writeLog('INFO', `Received prediction from Python process: ${JSON.stringify(prediction)}`);
+                writeLog('PREDICT', `payload=${JSON.stringify(payload)}`);
+                return res.json(prediction);
+            } catch (err) {
+                writeLog('ERROR', `Error parsing prediction: ${err.message}. Raw: ${dataString}`);
+                return res.status(500).json({ error: 'Invalid prediction response' });
+            }
+        });
+
+        pythonProcess.stdin.write(JSON.stringify(payload));
+        pythonProcess.stdin.end();
     } catch (err) {
         writeLog('ERROR', `Prediction error: ${err.message}`);
-        res.status(500).send("Prediction failed");
+        return res.status(500).json({ error: 'Prediction failed' });
     }
 });
 
