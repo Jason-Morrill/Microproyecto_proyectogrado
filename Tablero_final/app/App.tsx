@@ -19,6 +19,14 @@ export interface CustomerData {
 
 // the original local prediction logic has been removed; the app now requests an API
 
+function getApiBase(): string {
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return `${window.location.protocol}//${window.location.hostname}:3000`;
+  }
+
+  return 'http://localhost:3000';
+}
+
 export default function App() {
   const [customerData, setCustomerData] = useState<CustomerData>({
     recency: 30,
@@ -36,7 +44,7 @@ export default function App() {
   const [churnProbability, setChurnProbability] = useState(0);
   const [loading, setLoading] = useState(false); // kept for potential spinner
 
-  const API_BASE = ((import.meta as any).env?.VITE_API_BASE as string) || 'http://98.93.57.147:3000';
+  const API_BASE = getApiBase();
 
   useEffect(() => {
     async function fetchPrediction() {
