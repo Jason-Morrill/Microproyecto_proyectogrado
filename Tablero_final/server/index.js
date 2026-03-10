@@ -82,7 +82,10 @@ app.post('/api/predict', (req, res) => {
 
             try {
                 const prediction = JSON.parse(dataString);
+                const proba = prediction.churnProbability;
                 writeLog('INFO', `Received prediction from Python process: ${JSON.stringify(prediction)}`);
+                writeLog('INFO', `proba=${proba}`);
+                console.log(`proba=${proba}`);
                 writeLog('PREDICT', `payload=${JSON.stringify(payload)}`);
                 return res.json(prediction);
             } catch (err) {
