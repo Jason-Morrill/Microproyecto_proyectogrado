@@ -60,7 +60,11 @@ if ! python3 -m pip --version >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$VENV_DIR" ]; then
+if [ ! -f "$VENV_DIR/bin/activate" ]; then
+  if [ -d "$VENV_DIR" ]; then
+    log "Existing virtual environment is incomplete. Recreating: $VENV_DIR"
+    rm -rf "$VENV_DIR"
+  fi
   log "Creating Python virtual environment in: $VENV_DIR"
   python3 -m venv "$VENV_DIR"
 fi
