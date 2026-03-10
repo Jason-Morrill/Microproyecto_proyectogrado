@@ -10,7 +10,7 @@ set -euo pipefail
 REPO_DIR="${REPO_DIR:-$HOME/Microproyecto_proyectogrado}"
 APP_DIR="$REPO_DIR/Tablero_final"
 SERVER_DIR="$APP_DIR/server"
-VENV_DIR="$APP_DIR/.venv"
+VENV_DIR="$APP_DIR/server/.venv"
 REQUIREMENTS_FILE="$SERVER_DIR/requirements.txt"
 PROCESS_NAME="churn_dashboard"
 
