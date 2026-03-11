@@ -1,0 +1,281 @@
+% ============================================================
+%  Manual de Usuario — Churn Dashboard (Olist)
+% ============================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\usepackage{bookmark}
+
+\definecolor{lowgreen}{RGB}{22,163,74}
+\definecolor{medorange}{RGB}{234,88,12}
+\definecolor{highred}{RGB}{220,38,38}
+
+\title{Manual de Usuario\\
+\large Churn Dashboard --- Predicción de Abandono de Clientes Olist}
+\author{Equipo Microproyecto}
+\date{Marzo 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducción}
+
+El \textbf{Churn Dashboard} es una herramienta web que permite estimar la
+probabilidad de que un cliente de Olist \textbf{no vuelva a comprar} en los
+próximos 90 días, a partir de su historial de transacciones. La predicción
+es generada por un modelo de Regresión Logística entrenado con datos reales
+del marketplace.
+
+Este manual está dirigido a usuarios finales (analistas, equipos de retención)
+que deseen usar el tablero sin necesidad de acceder al código fuente.
+
+\subsection*{Acceso al tablero}
+
+El tablero está desplegado en una instancia AWS EC2. Para acceder, abra su
+navegador web (Chrome, Firefox o Edge) e ingrese la URL provista por el
+administrador, que tiene el formato:
+
+\begin{center}
+  \texttt{http://<IP-PUBLICA-EC2>:3000}
+\end{center}
+
+No se requiere instalación local ni credenciales para usar el tablero.
+
+% ============================================================
+\section{Interfaz principal}
+
+Al cargar el tablero verá dos áreas:
+
+\begin{enumerate}[itemsep=4pt]
+  \item \textbf{Panel lateral izquierdo} (\textit{Customer Data}): formulario
+        de entrada de datos del cliente.
+  \item \textbf{Panel central} (\textit{Customer Churn Prediction Dashboard}):
+        resultados de la predicción y análisis de factores.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{evidence/dashboard/EVID_DASH_01_prediction.png}
+  \caption{Vista principal del tablero con predicción activa.}
+\end{figure}
+
+% ============================================================
+\section{Panel lateral: ingreso de datos del cliente}
+
+El panel izquierdo está dividido en tres secciones. Complete todos los campos
+antes de solicitar la predicción.
+
+\subsection{RFM Analysis}
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Campo} & \textbf{Descripción} \\
+\midrule
+\texttt{Recency} &
+  Número de días desde la \textbf{última compra} del cliente hasta la fecha
+  de análisis. Valores altos indican mayor inactividad. \\[4pt]
+\texttt{Frequency} &
+  \textbf{Total de órdenes} realizadas históricamente por el cliente. Mínimo: 1. \\[4pt]
+\texttt{Monetary} &
+  \textbf{Gasto acumulado} del cliente en todas sus órdenes (en la moneda del
+  dataset, BRL). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Order Metrics}
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Campo} & \textbf{Descripción} \\
+\midrule
+\texttt{Avg. Items per Order} &
+  Promedio de artículos por orden. \\[4pt]
+\texttt{Avg. Price Sum} &
+  Promedio de la suma de precios por orden (sin flete). \\[4pt]
+\texttt{Avg. Freight Sum} &
+  Promedio del costo de flete por orden. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Experience Metrics}
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Campo} & \textbf{Descripción} \\
+\midrule
+\texttt{Avg. Review Score} &
+  Promedio del puntaje de reseña del cliente (escala 1--5). \\[4pt]
+\texttt{Avg. Delivery Days} &
+  Promedio de días entre la compra y la entrega real. \\[4pt]
+\texttt{Avg. Late Days} &
+  Promedio de días de retraso respecto a la fecha estimada de entrega.
+  Valores negativos indican entregas anticipadas. \\[4pt]
+\texttt{Customer State} &
+  Estado de Brasil donde reside el cliente. Seleccione de la lista desplegable
+  (AC, AL, AM, \ldots, SP, TO). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{Obtener una predicción}
+
+\begin{enumerate}[itemsep=4pt]
+  \item Complete todos los campos del panel lateral con los datos del cliente.
+  \item Haga clic en el botón \textbf{``Predict Churn''} al pie del formulario.
+  \item El panel central se actualizará automáticamente con el resultado.
+\end{enumerate}
+
+\noindent\textit{Nota: los campos no pueden quedar vacíos. Si un valor es
+desconocido, use el promedio histórico del cliente o un valor representativo
+de su segmento.}
+
+% ============================================================
+\section{Interpretación de resultados}
+
+\subsection{Tarjeta de probabilidad de churn}
+
+El indicador principal muestra la \textbf{probabilidad de churn} como un
+porcentaje en una escala radial. El color del indicador refleja el nivel de
+riesgo:
+
+\begin{center}
+\begin{tabular}{ccp{7cm}}
+\toprule
+\textbf{Color} & \textbf{Nivel} & \textbf{Interpretación} \\
+\midrule
+\textcolor{lowgreen}{\textbf{Verde}} & Bajo &
+  Probabilidad $< 40\%$. El cliente tiene alta probabilidad de regresar. \\[4pt]
+\textcolor{medorange}{\textbf{Naranja}} & Medio &
+  Probabilidad entre $40\%$ y $70\%$. Riesgo moderado; considerar acciones
+  de retención preventivas. \\[4pt]
+\textcolor{highred}{\textbf{Rojo}} & Alto &
+  Probabilidad $\geq 70\%$. El cliente tiene alta probabilidad de no volver.
+  Priorizar acciones de retención inmediatas. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tarjeta de retención}
+
+A la derecha del indicador de churn aparece la \textbf{probabilidad de retención} (complementaria): $p(retencion) = 1 - p(churn)$.
+
+\subsection{Panel de contribución de features}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.15\textwidth]{evidence/dashboard/EVID_DASH_03_features_export.png}
+  \caption{Panel de contribución de features y exportación.}
+\end{figure}
+
+Debajo del indicador principal aparece la lista de las \textbf{8 variables
+con mayor impacto} en la predicción actual:
+
+\begin{itemize}[itemsep=2pt]
+  \item Una barra verde con flecha hacia abajo (\textit{TrendingDown}) indica
+        que esa variable \textbf{reduce} la probabilidad de churn
+        (favorece la retención).
+  \item Una barra roja con flecha hacia arriba (\textit{TrendingUp}) indica
+        que esa variable \textbf{aumenta} la probabilidad de churn.
+  \item Las barras están ordenadas por magnitud de impacto: la variable en
+        la primera posición es la de mayor influencia en esta predicción.
+\end{itemize}
+
+Este panel permite al equipo de retención entender \textit{por qué} el modelo
+clasifica a ese cliente como en riesgo y tomar acciones concretas
+(por ejemplo: si \texttt{Recency} es el factor principal, el cliente lleva
+mucho tiempo sin comprar y podría beneficiarse de una oferta de reactivación).
+
+% ============================================================
+\section{Visualizaciones macro}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{evidence/dashboard/EVID_DASH_02_macro.png}
+  \caption{Visualizaciones macro: tasa de churn y distribución por estado.}
+\end{figure}
+
+El tablero también incluye visualizaciones a nivel de población:
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Distribución de churn}: porcentaje global de clientes con
+        churn vs.\ no-churn en el dataset de entrenamiento.
+  \item \textbf{Tasa de churn por estado}: mapa o gráfico de barras que
+        muestra en qué estados de Brasil la tasa de abandono es más alta,
+        útil para segmentación geográfica.
+\end{itemize}
+
+% ============================================================
+\section{Casos de uso típicos}
+
+\subsection{Evaluar un cliente antes de una campaña de retención}
+
+\begin{enumerate}[itemsep=2pt]
+  \item Busque en su CRM los datos del cliente: última compra, número de
+        órdenes, gasto total, puntaje de reseñas, etc.
+  \item Ingrese los valores en el formulario lateral.
+  \item Si el nivel de riesgo es \textbf{Alto} o \textbf{Medio}, incluya
+        al cliente en la campaña de retención con prioridad acorde.
+  \item Use el panel de contribución para personalizar el mensaje: si
+        \texttt{avg\_review\_score} tiene impacto negativo alto, el cliente
+        tuvo malas experiencias y puede responder a una disculpa + cupón.
+\end{enumerate}
+
+\subsection{Explorar un segmento geográfico}
+
+\begin{enumerate}[itemsep=2pt]
+  \item Consulte la visualización macro de tasa de churn por estado.
+  \item Seleccione el estado con mayor tasa.
+  \item Ingrese valores representativos de clientes de ese estado para
+        validar el riesgo individual.
+\end{enumerate}
+
+% ============================================================
+\section{Preguntas frecuentes}
+
+\begin{description}[style=nextline, itemsep=6pt]
+  \item[¿Qué umbral usa el modelo para decidir si hay churn?]
+    El modelo fue calibrado con un umbral de $\hat\tau = 0.12$: si la
+    probabilidad de recompra supera ese valor, el cliente se clasifica como
+    no-churn. En la interfaz, sin embargo, se muestra la probabilidad
+    continua para que el analista aplique su propio criterio operativo.
+
+  \item[¿Con qué frecuencia debo actualizar los datos del cliente?]
+    Se recomienda usar datos actualizados al momento del análisis. Los
+    campos de Recency, Frequency y Monetary son los más sensibles a cambios
+    recientes.
+
+  \item[¿Qué hago si la página no carga?]
+    Verifique que la instancia EC2 esté activa y que el proceso PM2
+    \texttt{churn\_dashboard} esté en estado \texttt{online}. Contacte al
+    administrador del sistema.
+
+  \item[¿Puedo exportar el resultado?]
+    El resultado de la predicción puede copiarse de la barra de URL o del
+    JSON que devuelve el endpoint \texttt{/api/predict}. Consulte al
+    administrador para habilitar una exportación estructurada.
+\end{description}
+
+\end{document}

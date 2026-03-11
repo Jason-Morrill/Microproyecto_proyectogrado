@@ -1,0 +1,21 @@
+\contentsline {section}{\numberline {1}Descripción general}{2}{section.1}%
+\contentsline {section}{\numberline {2}Requisitos previos}{2}{section.2}%
+\contentsline {section}{\numberline {3}Instalación paso a paso}{2}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Paso 1 — Actualizar el sistema}{2}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Paso 2 — Instalar Node.js y npm}{2}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Paso 3 — Instalar PM2 de forma global}{3}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Paso 4 — Configurar arranque automático de PM2}{3}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Paso 5 — Instalar Python 3.12 + venv + pip}{3}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Paso 6 — Clonar el repositorio}{3}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Paso 7 — Ejecutar el script de despliegue automático}{3}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Verificación de la instalación}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Estado del proceso PM2}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Prueba del endpoint de predicción}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Acceso desde el navegador}{4}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Comandos de operación}{5}{section.5}%
+\contentsline {section}{\numberline {6}Resolución de problemas frecuentes}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Error \texttt {ERR\_HTTP\_HEADERS\_SENT}}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Error: \texttt {pandas}, \texttt {joblib} o \texttt {sklearn} no encontrado}{5}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}No se registran requests en \texttt {server.log}}{5}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}La página no carga desde el navegador}{6}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Seguridad y buenas prácticas}{6}{section.7}%

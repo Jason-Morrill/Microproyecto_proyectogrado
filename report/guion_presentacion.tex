@@ -1,0 +1,179 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\title{Introducción al Proyecto --- Predicción de Churn en E-commerce (Olist)}
+\author{
+David Alan Delgado Zarco \\
+Octavio Esquivel Alvarez del Castillo \\
+John Williams Morrill \\
+Jason Rosher Morrill
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ------------------------------------------------------------------
+\section{Motivación y pregunta de negocio}
+
+El \textit{churn}, o abandono de clientes, representa uno de los mayores desafíos operativos en el comercio electrónico. Retener a un cliente existente es significativamente más
+económico que adquirir uno nuevo; sin embargo, muchas plataformas carecen de mecanismos
+automáticos para identificar, antes de que ocurra, qué clientes están en riesgo de no volver a
+comprar.
+
+Este proyecto aborda esa problemática sobre el \textbf{dataset público de Olist}, un marketplace
+brasileño con datos reales de órdenes, clientes, pagos, reseñas e ítems. La pregunta central
+que guía el trabajo es: \textbf{¿es posible anticipar qué clientes no volverán a comprar en los
+próximos 90 días, a partir de su historial transaccional y de experiencia?}
+
+Para responderla se construyó un pipeline completo de Machine Learning: desde la definición
+rigurosa del label hasta el despliegue de un modelo en producción en AWS, incluyendo un
+tablero interactivo de predicción individual.
+
+% ------------------------------------------------------------------
+\section{Datos y definición del label}
+
+Se utilizaron cinco archivos del dataset de Olist: \texttt{orders}, \texttt{customers},
+\texttt{payments}, \texttt{reviews} e \texttt{items}. Para evitar la duplicación de registros
+provocada por relaciones 1:N, cada tabla auxiliar se agrega por \texttt{order\_id} antes de
+unirse a la tabla de órdenes.
+
+El aspecto más crítico del diseño fue construir el label de churn sin introducir
+\textit{data leakage}. La solución adoptada es una \textbf{arquitectura de ventana temporal}:
+se fija una \textbf{fecha de snapshot} y se observa si el cliente realiza alguna compra en la
+\textbf{ventana futura} de $W = 90$ días siguiente. Formalmente:
+
+\[
+  \text{churn} = 1 \iff \text{el cliente no compra en } (\textit{snapshot},\ \textit{snapshot} + 90\text{ días}]
+\]
+
+Un cliente se etiqueta como $\text{churn}=0$ (no-churn / recompra) si sí compra dentro de esa
+ventana. Adicionalmente, para excluir clientes históricamente inactivos que sesgarían el
+modelo, la población se limita a aquellos con al menos una compra dentro de un
+\textit{lookback} de 180 días previos al snapshot.
+
+% ------------------------------------------------------------------
+\section{Ingeniería de features y partición temporal}
+
+Las variables se construyen a nivel de \texttt{customer\_unique\_id}, consolidando todas las
+órdenes anteriores al snapshot en tres grupos:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{RFM:} \textit{Recency} (días desde la última compra), \textit{Frequency}
+        (número de órdenes únicas) y \textit{Monetary} (suma total de pagos).
+  \item \textbf{Experiencia y logística:} promedio del puntaje de review, días de entrega,
+        días de retraso frente a la fecha estimada, número de ítems por orden, suma promedio
+        de precio y de flete.
+  \item \textbf{Contexto geográfico:} estado del cliente en Brasil
+        (\texttt{customer\_state}), tratado como variable categórica con codificación
+        \textit{one-hot}.
+\end{itemize}
+
+La partición train/test se realiza de forma \textbf{temporal} —no aleatoria— ordenando los
+clientes por su última compra previa al snapshot y asignando el 80\% más antiguo a
+entrenamiento y el 20\% más reciente a prueba. Esto reproduce un escenario realista de
+generalización y elimina cualquier filtración de información futura.
+
+% ------------------------------------------------------------------
+\section{Modelos y evaluación}
+
+Se entrenaron y compararon dos familias de modelos, ambas con corrección por desbalance de
+clases:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Regresión Logística} con \texttt{class\_weight=balanced} y regularización $L_2$.
+  \item \textbf{Random Forest} con \texttt{class\_weight=balanced\_subsample} y
+        \texttt{n\_estimators=400}.
+\end{itemize}
+
+Dado el fuerte desbalance del dataset —la mayoría de los clientes de Olist son compradores
+únicos que no regresan—, la métrica principal adoptada es el
+\textbf{PR-AUC para la clase no-churn} (\texttt{pr\_auc\_nochurn\_0}), que evalúa la
+capacidad del modelo de identificar correctamente la recompra. El accuracy convencional
+resulta engañoso en este contexto: un clasificador trivial que prediga siempre churn alcanza
+alta exactitud pero fracasa completamente en detectar la clase de interés.
+
+Un segundo aspecto clave fue el \textbf{ajuste del umbral de decisión}. Mediante un barrido
+sobre 99 valores entre 0 y 1, se identificó el umbral que maximiza el $F_1$ para no-churn.
+El valor resultante fue $\hat\tau = 0.12$, considerablemente inferior al 0.5 convencional,
+lo cual refleja la rareza del evento de recompra en la población.
+
+El modelo seleccionado fue la \textbf{Regresión Logística con $C=0.1$} y umbral operativo
+$0.12$, registrado en MLflow como \texttt{logreg\_C0.1\_thr012} por presentar el mayor
+\texttt{pr\_auc\_nochurn\_0} entre todos los runs comparados.
+
+% ------------------------------------------------------------------
+\section{Gestión de experimentos con MLflow en AWS EC2}
+
+Todo el ciclo experimental se gestionó con \textbf{MLflow Tracking Server}, desplegado en
+una instancia \textbf{EC2 Ubuntu} de AWS. El servidor almacena los parámetros, métricas y
+artefactos —modelo serializado, matrices de confusión, curvas Precision-Recall— de cada
+experimento, permitiendo su comparación visual en la interfaz web accesible por IP pública.
+
+Esta infraestructura garantiza la reproducibilidad de los experimentos y la trazabilidad
+completa del proceso de selección del modelo, tal como se esperaría en un entorno de
+producción real.
+
+% ------------------------------------------------------------------
+\section{Tablero de predicción individual}
+
+El proyecto culmina con el despliegue de un \textbf{tablero interactivo} accesible desde el
+navegador. Su arquitectura se compone de tres capas:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Frontend React/Vite:} captura las variables del cliente a través de un
+        formulario lateral y muestra el resultado de la predicción.
+  \item \textbf{API Express (Node.js):} recibe la solicitud en el endpoint
+        \texttt{POST /api/predict} y orquesta la ejecución del proceso de inferencia.
+  \item \textbf{Script de inferencia Python:} carga el modelo \texttt{best\_model\_logreg.joblib}
+        y ejecuta \texttt{predict\_proba}, devolviendo la probabilidad de churn como JSON.
+\end{itemize}
+
+El flujo de datos de extremo a extremo es:
+
+\[
+  \text{Usuario} \xrightarrow{\text{POST}} \text{React/Vite} \rightarrow \text{Express}
+  \xrightarrow{\texttt{spawn}} \text{Python} \rightarrow \texttt{joblib} \rightarrow
+  \texttt{churnProbability}
+\]
+
+El tablero muestra la probabilidad de churn en porcentaje junto con el nivel de riesgo
+(bajo, medio o alto) y, de forma destacada, un panel de \textbf{contribución de features}
+que desglosa qué variables impulsaron la predicción hacia churn o hacia retención. Esta
+interpretabilidad —derivada directamente de los coeficientes de la regresión logística—
+convierte el resultado en una herramienta accionable para equipos de retención.
+
+% ------------------------------------------------------------------
+\section{Conclusiones}
+
+El proyecto demuestra que es posible construir un sistema de predicción de churn funcional
+y desplegado en producción con un stack accesible: datos abiertos de e-commerce, pipeline
+reproducible con MLflow, modelo lineal interpretable y tablero en la nube.
+
+Los aprendizajes técnicos centrales son:
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item El diseño correcto del label mediante ventana temporal es indispensable para evitar
+        \textit{data leakage} y obtener estimaciones de generalización válidas.
+  \item En datasets desbalanceados, el ajuste del umbral de decisión tiene un impacto mayor
+        que la elección del algoritmo.
+  \item MLflow proporciona trazabilidad y reproducibilidad sin sobrecarga operativa
+        significativa.
+\end{itemize}
+
+Como trabajo futuro se identifican: incorporar señales de comportamiento por categoría de
+producto, explorar modelos de gradient boosting calibrados, y añadir monitoreo de deriva
+del modelo (\textit{data drift}) en producción.
+
+\end{document}

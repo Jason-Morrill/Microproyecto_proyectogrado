@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Introducción}{2}{section.1}%
+\contentsline {section}{\numberline {2}Interfaz principal}{2}{section.2}%
+\contentsline {section}{\numberline {3}Panel lateral: ingreso de datos del cliente}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}RFM Analysis}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Order Metrics}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Experience Metrics}{3}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Obtener una predicción}{3}{section.4}%
+\contentsline {section}{\numberline {5}Interpretación de resultados}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Tarjeta de probabilidad de churn}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Tarjeta de retención}{4}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Panel de contribución de features}{4}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Visualizaciones macro}{5}{section.6}%
+\contentsline {section}{\numberline {7}Casos de uso típicos}{5}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Evaluar un cliente antes de una campaña de retención}{5}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Explorar un segmento geográfico}{6}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Preguntas frecuentes}{6}{section.8}%

@@ -1,0 +1,342 @@
+% ============================================================
+%  Manual de Instalación — Churn Dashboard (Olist)
+% ============================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\usepackage{bookmark}
+\usepackage{url}
+
+% Estilo para bloques de código bash
+\lstdefinestyle{bash}{
+  language=bash,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  rulecolor=\color{gray!40},
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{teal},
+  numbers=none,
+}
+
+\lstset{style=bash}
+
+\title{Manual de Instalación\\
+\large Churn Dashboard --- Predicción de Abandono de Clientes Olist}
+\author{Equipo Microproyecto}
+\date{Marzo 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Descripción general}
+
+Este manual describe los pasos para instalar y poner en marcha el
+\textbf{Churn Dashboard} en una instancia \textbf{Ubuntu 22.04} (recomendado
+en AWS EC2). Al finalizar, el tablero estará accesible en el puerto
+\texttt{3000} del servidor y administrado por PM2.
+
+\subsection*{Componentes instalados}
+
+\begin{itemize}[itemsep=2pt]
+  \item \textbf{Frontend}: aplicación React/Vite compilada y servida por
+        Express desde el directorio \texttt{dist/}.
+  \item \textbf{Backend}: servidor Express (Node.js) en
+        \texttt{server/index.js}, endpoint \texttt{POST /api/predict}.
+  \item \textbf{Inferencia ML}: script Python \path{server/predict_joblib.py}
+        con el modelo \path{best_model_logreg.joblib}.
+  \item \textbf{Gestor de procesos}: PM2 mantiene el servicio activo tras
+        reinicios.
+\end{itemize}
+
+\subsection*{Repositorio}
+
+\begin{center}
+  \url{https://github.com/Jason-Morrill/Microproyecto_proyectogrado}
+\end{center}
+
+% ============================================================
+\section{Requisitos previos}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Componente} & \textbf{Versión mínima} & \textbf{Notas} \\
+\midrule
+Ubuntu / Debian  & 22.04 LTS & Recomendado EC2 \\
+Node.js          & 18.x      & LTS recomendado \\
+npm              & 9.x       & Se instala con Node.js \\
+Python           & 3.12      & Con \texttt{venv} y \texttt{pip} \\
+PM2              & 5.x       & Instalado globalmente vía npm \\
+Git              & 2.x       & Para clonar el repositorio \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Puertos:} el Security Group (EC2) o firewall debe permitir
+tráfico entrante en el puerto \texttt{3000} (TCP) desde las IPs que accederán
+al tablero.
+
+% ============================================================
+\section{Instalación paso a paso}
+
+\subsection{Paso 1 — Actualizar el sistema}
+
+\begin{lstlisting}
+sudo apt update && sudo apt upgrade -y
+\end{lstlisting}
+
+\subsection{Paso 2 — Instalar Node.js y npm}
+
+\begin{lstlisting}
+sudo apt install -y nodejs npm
+node -v    # debe mostrar v18.x o superior
+npm -v
+\end{lstlisting}
+
+Si la versión de Node.js disponible en \texttt{apt} es antigua, instale la
+versión LTS mediante NodeSource:
+
+\begin{lstlisting}
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v
+\end{lstlisting}
+
+\subsection{Paso 3 — Instalar PM2 de forma global}
+
+\begin{lstlisting}
+sudo npm install -g pm2
+pm2 -v
+\end{lstlisting}
+
+\subsection{Paso 4 — Configurar arranque automático de PM2}
+
+\begin{lstlisting}
+pm2 startup systemd -u ubuntu --hp /home/ubuntu
+\end{lstlisting}
+
+El comando anterior imprimirá otro comando con \texttt{sudo}. Ejecútelo
+exactamente como aparezca en pantalla. A continuación:
+
+\begin{lstlisting}
+pm2 save
+\end{lstlisting}
+
+\subsection{Paso 5 — Instalar Python 3.12 + venv + pip}
+
+\begin{lstlisting}
+sudo apt install -y python3.12-venv python3-pip
+python3 --version     # debe mostrar 3.12.x
+python3 -m pip --version
+\end{lstlisting}
+
+\subsection{Paso 6 — Clonar el repositorio}
+
+\begin{lstlisting}
+cd /home/ubuntu
+git clone https://github.com/Jason-Morrill/Microproyecto_proyectogrado \
+    Microproyecto_proyectogrado
+cd /home/ubuntu/Microproyecto_proyectogrado
+\end{lstlisting}
+
+Si el repositorio ya existe, actualícelo:
+
+\begin{lstlisting}
+cd /home/ubuntu/Microproyecto_proyectogrado
+git pull --ff-only
+\end{lstlisting}
+
+\subsection{Paso 7 — Ejecutar el script de despliegue automático}
+
+\begin{lstlisting}
+cd /home/ubuntu/Microproyecto_proyectogrado/Tablero_final
+bash deploy_churn_dashboard.sh
+\end{lstlisting}
+
+El script realiza automáticamente:
+
+\begin{enumerate}[itemsep=2pt]
+  \item Instalación de dependencias del frontend (\texttt{npm install}).
+  \item \texttt{npm run build} para compilar la aplicación Vite en \texttt{dist/}.
+  \item Instalación de dependencias del backend (\texttt{npm install} en
+        \texttt{server/}).
+  \item Creación (o reparación) del entorno virtual Python en
+        \texttt{server/.venv}.
+  \item Instalación de dependencias Python desde
+        \texttt{server/requirements.txt}.
+  \item Inicio (o reinicio) del proceso \texttt{churn\_dashboard} en PM2.
+  \item \texttt{pm2 save} para persistir el proceso.
+\end{enumerate}
+
+Al finalizar correctamente verá en consola:
+
+\begin{lstlisting}
+[PM2] Process churn_dashboard online
+\end{lstlisting}
+
+% ============================================================
+\section{Verificación de la instalación}
+
+\subsection{Estado del proceso PM2}
+
+\begin{lstlisting}
+pm2 status
+\end{lstlisting}
+
+El proceso \texttt{churn\_dashboard} debe aparecer en estado \textbf{online}.
+
+\subsection{Prueba del endpoint de predicción}
+
+\begin{lstlisting}
+curl -sS -X POST http://127.0.0.1:3000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recency": 32,
+    "frequency": 5,
+    "monetary": 500,
+    "avg_review_score": 4,
+    "avg_delivery_days": 10,
+    "avg_late_days": 0,
+    "avg_num_items": 2,
+    "avg_price_sum": 100,
+    "avg_freight_sum": 15,
+    "customer_state": "SP"
+  }'
+\end{lstlisting}
+
+Respuesta esperada:
+
+\begin{lstlisting}
+{"churnProbability": 0.1234}
+\end{lstlisting}
+
+\subsection{Acceso desde el navegador}
+
+Abra un navegador y navegue a:
+
+\begin{center}
+  \texttt{http://<IP-PUBLICA-EC2>:3000}
+\end{center}
+
+Debe cargarse la interfaz del tablero con el formulario lateral de entrada
+de datos del cliente.
+
+% ============================================================
+\section{Comandos de operación}
+
+\begin{center}
+\begin{tabular}{>{}p{4.2cm}p{9.5cm}}
+\toprule
+\textbf{Acción} & \textbf{Comando} \\
+\midrule
+Ver estado del proceso &
+  \texttt{pm2 status} \\[4pt]
+Ver logs en tiempo real &
+  \texttt{pm2 logs churn\_dashboard -{}-lines 100} \\[4pt]
+Ver logs de aplicación &
+  \small\path{tail -f /home/ubuntu/Microproyecto_proyectogrado/Tablero_final/server/logs/server.log} \\[4pt]
+Reiniciar tras cambios &
+  \texttt{pm2 restart churn\_dashboard -{}-update-env} \\[4pt]
+Eliminar y recrear proceso &
+  \texttt{pm2 delete churn\_dashboard} \\
+  &
+  \texttt{pm2 start .../server/index.js -{}-name churn\_dashboard} \\
+  &
+  \texttt{pm2 save} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{Resolución de problemas frecuentes}
+
+\subsection{Error \texttt{ERR\_HTTP\_HEADERS\_SENT}}
+
+\textbf{Causa:} doble respuesta HTTP generada en el servidor.
+
+\textbf{Solución:}
+\begin{lstlisting}
+cd /home/ubuntu/Microproyecto_proyectogrado
+git pull --ff-only
+pm2 restart churn_dashboard --update-env
+pm2 logs churn_dashboard --lines 100
+\end{lstlisting}
+
+\subsection{Error: \texttt{pandas}, \texttt{joblib} o \texttt{sklearn} no encontrado}
+
+\textbf{Causa:} el entorno virtual Python no tiene las dependencias instaladas
+o el proceso PM2 no usa el Python de \texttt{.venv}.
+
+\textbf{Verificación:}
+\begin{lstlisting}
+/home/ubuntu/Microproyecto_proyectogrado/Tablero_final/server/.venv/bin/python \
+  -c "import pandas, joblib, sklearn; print('ok')"
+\end{lstlisting}
+
+\textbf{Solución si falla:}
+\begin{lstlisting}
+cd /home/ubuntu/Microproyecto_proyectogrado/Tablero_final/server
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+deactivate
+pm2 restart churn_dashboard --update-env
+\end{lstlisting}
+
+\subsection{No se registran requests en \texttt{server.log}}
+
+\begin{enumerate}[itemsep=2pt]
+  \item Verifique la ruta exacta del log con \texttt{pm2 show churn\_dashboard}.
+  \item Genere tráfico con \texttt{curl} (ver §4.2).
+  \item Confirme que el proceso usa el script correcto:
+        \texttt{pm2 show churn\_dashboard | grep script}.
+\end{enumerate}
+
+\subsection{La página no carga desde el navegador}
+
+\begin{enumerate}[itemsep=2pt]
+  \item Confirme que \texttt{pm2 status} muestra \texttt{churn\_dashboard}
+        en estado \texttt{online}.
+  \item Verifique que el puerto 3000 esté abierto en el Security Group de EC2
+        (Inbound rules: TCP 3000 desde su IP o \texttt{0.0.0.0/0}).
+  \item Pruebe localmente desde el propio servidor con
+        \texttt{curl http://127.0.0.1:3000}.
+\end{enumerate}
+
+% ============================================================
+\section{Seguridad y buenas prácticas}
+
+\begin{itemize}[itemsep=4pt]
+  \item \textbf{Security Group EC2}: restrinja el puerto 3000 solo a las IPs
+        que necesiten acceso. Para producción, coloque un balanceador de carga
+        (ALB) con HTTPS y no exponga el puerto 3000 directamente.
+  \item \textbf{Secretos}: no suba archivos \texttt{.env} con credenciales al
+        repositorio. Use AWS Secrets Manager o variables de entorno del sistema.
+  \item \textbf{Modelo}: versione el artefacto \texttt{best\_model\_logreg.joblib}
+        en MLflow y no lo sobreescriba sin incrementar la versión.
+  \item \textbf{Instancia EC2}: mantenga la instancia \textbf{detenida}
+        (Stopped) cuando no esté en uso. \textbf{No la termine (Terminate)},
+        ya que se perdería la configuración instalada.
+\end{itemize}
+
+\end{document}
