@@ -1,54 +1,92 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
-
+\documentclass[10pt]{article}
+\usepackage[margin=0.45in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{ragged2e}
+\usepackage{subcaption}
+\usepackage{xcolor}
 
-\title{Reporte de trabajo en equipo --- Entrega 2 (1 página)}
-\author{}
-\date{\today}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{2.5pt}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\textfloatsep}{6pt}
+\setlength{\intextsep}{6pt}
+\setlength{\abovecaptionskip}{2pt}
+\setlength{\belowcaptionskip}{0pt}
 
 \begin{document}
-\maketitle
 
-% Evita cortes de palabras (especialmente nombres/rutas)
+\begin{center}
+{\large\bfseries Reporte de trabajo en equipo --- Entrega 3}\\[-2pt]
+{\small Roles, contribuciones y evidencia de commits del equipo}
+\end{center}
+
 \hyphenpenalty=10000
 \exhyphenpenalty=10000
 
-\section*{Roles y contribuciones}
-
 {\scriptsize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{2.0}
+\textbf{Roles y contribuciones}
 
 \begin{table}[H]
 \centering
 \begin{tabularx}{\textwidth}{
->{\RaggedRight\arraybackslash}p{4.2cm}
->{\RaggedRight\arraybackslash}p{2.6cm}
+>{\RaggedRight\arraybackslash}p{3.25cm}
+>{\RaggedRight\arraybackslash}p{1.75cm}
 >{\RaggedRight\arraybackslash}X
->{\RaggedRight\arraybackslash}p{3.2cm}}
+>{\RaggedRight\arraybackslash}p{2.45cm}}
 \toprule
 \textbf{Miembro} & \textbf{Rol} & \textbf{Entregables} & \textbf{Evidencia} \\
 \midrule
 David Alan Delgado Zarco & Modelado y metodología &
-Label sin leakage, features, split temporal, modelos, tuning de umbral &
-Commits notebook, outputs (tablas/figuras) \\
+Label sin leakage, features, split temporal, modelos, selección y ajuste de umbral. &
+Commits de notebook, tablas y figuras del modelado. \\
 Octavio Esquivel Alvarez del Castillo & Reporte (LaTeX) + QA &
-Plantilla LaTeX ($\leq$10 pág), integración de evidencias, revisión de rúbrica &
-Commits report/, PDF final \\
-John Williams Morrill & Tablero (Streamlit) &
-Dashboard funcional, filtros, export, capturas del tablero &
-dashboard/streamlit\_app.py, evidence/dashboard \\
-Jason Rosher Morrill & MLOps / Infra (EC2+MLflow) &
-MLflow en EC2 estable, persistencia, runs, capturas MLflow/EC2 &
-infra/ + evidence/aws y evidence/mlflow \\
+Plantilla LaTeX ($\leq$ 10 pág.), integración de evidencias y revisión contra rúbrica. &
+Commits en \texttt{report/} y PDF final. \\
+John Williams Morrill & Tablero (dashboard) &
+Implementación del tablero, capturas de evidencia y apoyo en reportes. &
+Commits del dashboard y evidencia visual. \\
+Jason Rosher Morrill & API / lógica de predicción &
+Backend, endpoint de predicción, integración con \texttt{joblib} y despliegue funcional. &
+Commits de API y lógica \texttt{predict}. \\
 \bottomrule
 \end{tabularx}
 \end{table}
 }
+
+{\scriptsize \textbf{Evidencia de commits por integrante}}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}[t]{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{evidence/commits/EVID_COMMITS_01_david.png}
+  \caption*{\scriptsize David Alan Delgado Zarco}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{evidence/commits/EVID_COMMITS_02_octavio.png}
+  \caption*{\scriptsize Octavio Esquivel Alvarez del Castillo}
+\end{subfigure}
+
+\vspace{3pt}
+
+\begin{subfigure}[t]{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{evidence/commits/EVID_COMMITS_03_john.jpeg}
+  \caption*{\scriptsize John Williams Morrill}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.485\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{evidence/commits/EVID_COMMITS_04_jason.png}
+  \caption*{\scriptsize Jason Rosher Morrill}
+\end{subfigure}
+\end{figure}
 
 \end{document}
